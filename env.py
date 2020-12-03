@@ -3,6 +3,8 @@ import sys
 import numpy as np
 import matplotlib.pyplot as plt
 from PIL import Image
+import pickle
+from tqdm import trange
 
 
 class Env:
@@ -94,6 +96,8 @@ class Env:
         return reward, state, over, info
 
     def load_map(self, map):
+        self.reset()
+        self.broad = map
         for x in range(0, 19):
             for y in range(0, 19):
                 if map[x][y]:
@@ -101,9 +105,21 @@ class Env:
                     fix_y = y * 26.33 + 18
                     pygame.draw.circle(self.screen, self.color[map[x][y] - 1], (fix_x, fix_y), 12, 0)
         pygame.display.flip()
+        return Image.frombytes('RGB', self.size, pygame.image.tostring(self.screen, 'RGB'))
 
 
 if __name__ == '__main__':
     env = Env()
-    while True:
-        env.event_forward()
+    label = []
+    for i in trange(5000):
+
+        map = np.random.randint(0, 3, (19, 19))
+        env.load_map(map).save('pic\\' + str(i) + '.jpg')
+        label.append(map)
+
+    label = np.dstack(label)
+
+    label = label.transpose([2, 0, 1])
+    label.dump('label.dat')
+    # while True:
+    #     env.event_forward()
